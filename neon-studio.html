@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Neón Studio</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#000;overflow:hidden;touch-action:none;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+  canvas{display:block;width:100vw;height:100dvh;position:fixed;top:0;left:0}
+  #ui{
+    position:fixed;bottom:10px;left:0;right:0;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    padding:0 10px 10px;pointer-events:none;z-index:10
+  }
+  #ui>*{pointer-events:auto}
+  #modos{
+    display:flex;gap:6px;flex-wrap:wrap;justify-content:center
+  }
+  .modo-btn{
+    padding:6px 14px;border-radius:20px;border:1px solid rgba(255,255,255,0.12);
+    background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.45);
+    font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;
+    backdrop-filter:blur(10px);transition:all .2s;letter-spacing:.5px
+  }
+  .modo-btn.active{background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.3)}
+  #paleta{display:flex;gap:8px;justify-content:center}
+  .color-btn{
+    width:28px;height:28px;border-radius:50%;
+    border:2px solid rgba(255,255,255,0.08);cursor:pointer;
+    transition:transform .15s,border-color .15s;-webkit-tap-highlight-color:transparent
+  }
+  .color-btn.active{transform:scale(1.35);border-color:#fff}
+  #controles{
+    display:flex;gap:12px;align-items:center;justify-content:center
+  }
+  .ctrl-btn{
+    width:40px;height:40px;border-radius:50%;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+    color:rgba(255,255,255,0.35);font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    -webkit-tap-highlight-color:transparent;transition:background .15s
+  }
+  .ctrl-btn:active{background:rgba(255,255,255,0.1)}
+  #label-modo{
+    color:rgba(255,255,255,0.15);font-size:10px;letter-spacing:2px;text-transform:uppercase
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="ui">
+  <div id="modos">
+    <button class="modo-btn active" data-m="0">🌀 Caleidoscopio</button>
+    <button class="modo-btn" data-m="1">🪞 Espejo</button>
+    <button class="modo-btn" data-m="2">🌺 Flor</button>
+    <button class="modo-btn" data-m="3">🌌 Espiral</button>
+    <button class="modo-btn" data-m="4">🌀 Mándala</button>
+    <button class="modo-btn" data-m="5">🌊 Olas</button>
+    <button class="modo-btn" data-m="6">⚜️ Lirios</button>
+  </div>
+  <div id="paleta"></div>
+  <div id="controles">
+    <button class="ctrl-btn" id="undo-btn">↩</button>
+    <button class="ctrl-btn" id="clear-btn">✕</button>
+  </div>
+</div>
+<script>
+  const canvas=document.getElementById('c');
+  const ctx=canvas.getContext('2d');
+  const offscreen=new OffscreenCanvas(1,1);
+  let offCtx=offscreen.getContext('2d');
+
+  let W,H,CX,CY;
+  function resize(){
+    W=canvas.width=innerWidth;
+    H=canvas.height=innerHeight;
+    CX=W/2;CY=H/2;
+    offscreen.width=W;offscreen.height=H;
+    offCtx.fillStyle='#000';
+    offCtx.fillRect(0,0,W,H);
+    redraw();
+  }
+  resize();
+  addEventListener('resize',resize);
+
+  const COLORS=['#ff3366','#ff8833','#ffdd33','#33ff77','#33ddff','#7744ff','#ff44bb'];
+  const paleta=document.getElementById('paleta');
+  let curColor=2;
+  COLORS.forEach((c,i)=>{
+    const b=document.createElement('div');
+    b.className='color-btn'+(i===curColor?' active':'');
+    b.style.background=c;
+    const set=()=>{
+      document.querySelectorAll('.color-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');curColor=i;
+    };
+    b.onclick=set;b.ontouchstart=e=>{e.preventDefault();set()};
+    paleta.appendChild(b);
+  });
+
+  const MODOS=[
+    {name:'Caleidoscopio',fn:(x,y,pts)=>{
+      const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const N=8,step=Math.PI*2/N;
+      for(let i=0;i<N;i++){
+        const ang=a+step*i;
+        pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d});
+        pts.push({x:CX+Math.cos(-ang)*d,y:CY+Math.sin(-ang)*d});
+      }
+    }},
+    {name:'Espejo',fn:(x,y,pts)=>{
+      pts.push({x,y});
+      pts.push({x:W-x,y});
+      pts.push({x,y:H-y});
+      pts.push({x:W-x,y:H-y});
+    }},
+    {name:'Flor',fn:(x,y,pts)=>{
+      const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const N=6,step=Math.PI/N;
+      for(let i=0;i<N;i++){
+        const ang=a+step*i;
+        pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d});
+        const ang2=Math.PI/2-a-step*i;
+        pts.push({x:CX+Math.cos(ang2)*d*0.6,y:CY+Math.sin(ang2)*d*0.6});
+      }
+    }},
+    {name:'Espiral',fn:(x,y,pts)=>{
+      const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      for(let i=0;i<8;i++){
+        const ang=a+i*Math.PI/4;
+        const rd=d*(1+i*0.15);
+        pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd});
+      }
+    }},
+    {name:'Mándala',fn:(x,y,pts)=>{
+      const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const N=12,step=Math.PI*2/N;
+      for(let i=0;i<N;i++)pts.push({x:CX+Math.cos(a+step*i)*d,y:CY+Math.sin(a+step*i)*d});
+      for(let i=0;i<N;i++)pts.push({x:CX+Math.cos(-a+step*i)*d*0.5,y:CY+Math.sin(-a+step*i)*d*0.5});
+    }},
+    {name:'Olas',fn:(x,y,pts)=>{
+      const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const wave=Math.sin(d*0.03)*20;
+      for(let i=-2;i<=2;i++){
+        const ang=a+Math.sin(d*0.02+i)*0.3;
+        const rd=d+wave+i*8;
+        pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd});
+      }
+      for(let i=-2;i<=2;i++){
+        const ang=-a+Math.cos(d*0.02+i)*0.3;
+        const rd=d-wave+i*8;
+        pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd});
+      }
+    }},
+    {name:'Lirios',fn:(x,y,pts)=>{
+      const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
+      const N=6,step=Math.PI*2/N;
+      const size=Math.min(d*1.1,Math.max(W,H)*0.7);
+      for(let i=0;i<N;i++){
+        const ang=a+step*i;
+        pts.push({x:CX+Math.cos(ang)*size,y:CY+Math.sin(ang)*size});
+        const curl=0.35+0.1*Math.sin(i*2);
+        pts.push({x:CX+Math.cos(ang-curl)*size*0.75,y:CY+Math.sin(ang-curl)*size*0.75});
+        pts.push({x:CX+Math.cos(ang+curl)*size*0.75,y:CY+Math.sin(ang+curl)*size*0.75});
+        pts.push({x:CX+Math.cos(ang-curl*0.5)*size*0.35,y:CY+Math.sin(ang-curl*0.5)*size*0.35});
+        pts.push({x:CX+Math.cos(ang+curl*0.5)*size*0.35,y:CY+Math.sin(ang+curl*0.5)*size*0.35});
+      }
+      for(let i=0;i<6;i++){
+        const ang=a+step*i+step*0.5;
+        pts.push({x:CX+Math.cos(ang)*size*0.15,y:CY+Math.sin(ang)*size*0.15});
+      }
+    }}
+  ];
+
+  let curModo=0;
+  document.querySelectorAll('.modo-btn').forEach(b=>{
+    b.onclick=()=>{
+      document.querySelectorAll('.modo-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');curModo=parseInt(b.dataset.m);
+    };
+    b.ontouchstart=e=>{e.preventDefault();b.onclick()};
+  });
+
+  function getColor(){return COLORS[curColor]}
+
+  let history=[];
+  const MAX_HISTORY=30;
+
+  function drawStroke(x1,y1,x2,y2){
+    const pts1=[],pts2=[];
+    MODOS[curModo].fn(x1,y1,pts1);
+    MODOS[curModo].fn(x2,y2,pts2);
+    const color=getColor();
+    offCtx.lineWidth=3;
+    offCtx.lineCap='round';
+    offCtx.strokeStyle=color;
+    offCtx.shadowColor=color;
+    offCtx.shadowBlur=12;
+    for(let i=0;i<pts1.length&&i<pts2.length;i++){
+      offCtx.beginPath();
+      offCtx.moveTo(pts1[i].x,pts1[i].y);
+      offCtx.lineTo(pts2[i].x,pts2[i].y);
+      offCtx.stroke();
+    }
+    offCtx.shadowBlur=0;
+  }
+
+  function drawDot(x,y){
+    const pts=[];
+    MODOS[curModo].fn(x,y,pts);
+    const color=getColor();
+    offCtx.fillStyle=color;
+    offCtx.shadowColor=color;
+    offCtx.shadowBlur=15;
+    for(const p of pts){
+      offCtx.beginPath();
+      offCtx.arc(p.x,p.y,3,0,Math.PI*2);
+      offCtx.fill();
+    }
+    offCtx.shadowBlur=0;
+  }
+
+  function saveState(){
+    if(history.length>=MAX_HISTORY)history.shift();
+    history.push(offCtx.getImageData(0,0,W,H));
+  }
+
+  let isDrawing=false,lx=0,ly=0;
+
+  function startDraw(x,y){
+    saveState();
+    isDrawing=true;lx=x;ly=y;
+    drawDot(x,y);
+    redraw();
+  }
+  function moveDraw(x,y){
+    if(!isDrawing)return;
+    drawStroke(lx,ly,x,y);
+    lx=x;ly=y;
+    redraw();
+  }
+  function endDraw(){isDrawing=false;}
+
+  canvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    const t=e.touches[0],r=canvas.getBoundingClientRect();
+    startDraw(t.clientX-r.left,t.clientY-r.top);
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const t=e.touches[0],r=canvas.getBoundingClientRect();
+    moveDraw(t.clientX-r.left,t.clientY-r.top);
+  },{passive:false});
+  canvas.addEventListener('touchend',e=>{e.preventDefault();endDraw()},{passive:false});
+
+  canvas.addEventListener('mousedown',e=>startDraw(e.clientX,e.clientY));
+  canvas.addEventListener('mousemove',e=>moveDraw(e.clientX,e.clientY));
+  canvas.addEventListener('mouseup',endDraw);
+  canvas.addEventListener('mouseleave',endDraw);
+
+  document.getElementById('clear-btn').onclick=()=>{
+    offCtx.fillStyle='#000';
+    offCtx.fillRect(0,0,W,H);
+    history.length=0;
+    redraw();
+  };
+  document.getElementById('undo-btn').onclick=()=>{
+    if(history.length===0)return;
+    offCtx.putImageData(history.pop(),0,0);
+    redraw();
+  };
+
+  let fade=0;
+  function redraw(){
+    ctx.drawImage(offscreen,0,0);
+  }
+
+  function loop(t){
+    redraw();
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>
