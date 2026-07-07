@@ -47,7 +47,7 @@ background:linear-gradient(transparent,rgba(0,0,0,0.7));backdrop-filter:blur(6px
 <script>
 const canvas=document.getElementById('c');
 const ctx=canvas.getContext('2d');
-const offscreen=new OffscreenCanvas(1,1);
+const offscreen=document.createElement('canvas');
 let offCtx=offscreen.getContext('2d');
 let W,H,CX,CY;
 
