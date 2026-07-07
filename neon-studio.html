@@ -6,11 +6,11 @@
 <title>Neon Studio Pro</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;overflow:hidden;touch-action:none;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none}
-canvas{display:block;width:100vw;height:100dvh;position:fixed;top:0;left:0}
-#ui{position:fixed;bottom:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 10px 12px;pointer-events:none;z-index:10;
+body{background:#000;overflow:hidden;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none}
+canvas{display:block;width:100vw;height:100dvh;position:fixed;top:0;left:0;touch-action:none}
+#ui{position:fixed;bottom:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 10px 12px;z-index:10;
 background:linear-gradient(transparent,rgba(0,0,0,0.7));backdrop-filter:blur(6px)}
-#ui>*{pointer-events:auto}
+#modos{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;position:relative;z-index:11}
 #modos{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
 .modo-btn{padding:5px 11px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);transition:all .2s;letter-spacing:.3px;white-space:nowrap}
 .modo-btn.active{background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.25);box-shadow:0 0 12px rgba(255,255,255,0.05)}
