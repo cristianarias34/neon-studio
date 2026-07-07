@@ -3,301 +3,364 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Neon Studio Pro</title>
+<title>Neon Studio ✨</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;overflow:hidden;font-family:system-ui,sans-serif;user-select:none;-webkit-user-select:none}
-canvas{display:block;width:100vw;height:100dvh;position:fixed;top:0;left:0;touch-action:none}
-#ui{position:fixed;bottom:0;left:0;right:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 10px 12px;z-index:10;
-background:linear-gradient(transparent,rgba(0,0,0,0.7));backdrop-filter:blur(6px)}
-#modos{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;position:relative;z-index:11}
-#modos{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
-.modo-btn{padding:5px 11px;border-radius:14px;border:1px solid rgba(255,255,255,0.08);background:rgba(0,0,0,0.4);color:rgba(255,255,255,0.4);font-size:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(4px);transition:all .2s;letter-spacing:.3px;white-space:nowrap}
-.modo-btn.active{background:rgba(255,255,255,0.12);color:#fff;border-color:rgba(255,255,255,0.25);box-shadow:0 0 12px rgba(255,255,255,0.05)}
-#paleta{display:flex;gap:6px;justify-content:center}
-.color-btn{width:22px;height:22px;border-radius:50%;border:2px solid rgba(255,255,255,0.06);cursor:pointer;transition:transform .15s,border-color .15s;-webkit-tap-highlight-color:transparent}
-.color-btn.active{transform:scale(1.4);border-color:#fff}
-#control-row{display:flex;gap:8px;align-items:center;justify-content:center;width:100%}
-.ctrl-btn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:rgba(255,255,255,0.35);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;transition:background .15s}
-.ctrl-btn:active{background:rgba(255,255,255,0.1)}
-#size-slider{-webkit-appearance:none;height:3px;border-radius:2px;background:rgba(255,255,255,0.1);width:60px;cursor:pointer}
-#size-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.3);border:none;cursor:pointer}
-#size-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,0.3);border:none;cursor:pointer}
-#label-size{color:rgba(255,255,255,0.15);font-size:9px;min-width:22px;text-align:center}
-#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:24px;font-weight:300;pointer-events:none;opacity:0;transition:opacity .4s;text-shadow:0 0 30px rgba(255,255,255,0.2);z-index:20}
+body{background:#0a0a12;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;color:#fff}
+
+canvas{display:block;position:fixed;top:0;left:0;width:100vw;height:100dvh;touch-action:none}
+
+#panel{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:linear-gradient(transparent,rgba(0,0,0,0.85));
+  padding:12px 10px 16px;display:flex;flex-direction:column;gap:8px;
+  max-height:55vh;overflow-y:auto;
+  -webkit-overflow-scrolling:touch
+}
+#panel::-webkit-scrollbar{display:none}
+
+.seccion{display:flex;flex-direction:column;gap:4px}
+.etiqueta{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:rgba(255,255,255,0.2);padding:0 2px 2px}
+
+#fila-modos{display:flex;gap:4px;flex-wrap:wrap}
+.modo-btn{
+  padding:6px 10px;border-radius:12px;border:1px solid rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.35);
+  font-size:9.5px;cursor:pointer;transition:all .2s;white-space:nowrap;
+  -webkit-tap-highlight-color:transparent;font-family:inherit
+}
+.modo-btn.active{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)}
+.modo-btn:active{transform:scale(0.95)}
+
+#fila-colores{display:flex;gap:5px;flex-wrap:wrap}
+.color-btn{
+  width:26px;height:26px;border-radius:50%;border:2px solid rgba(255,255,255,0.05);
+  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent
+}
+.color-btn.active{border-color:#fff;transform:scale(1.25);box-shadow:0 0 12px rgba(255,255,255,0.1)}
+.color-btn:active{transform:scale(0.9)}
+
+#fila-controles{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ctrl-btn{
+  height:34px;padding:0 12px;border-radius:8px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+  color:rgba(255,255,255,0.5);font-size:11px;cursor:pointer;
+  display:flex;align-items:center;gap:4px;font-family:inherit;
+  -webkit-tap-highlight-color:transparent;transition:background .15s
+}
+.ctrl-btn:active{background:rgba(255,255,255,0.08)}
+.ctrl-btn .icono{font-size:14px}
+
+#size-slider{-webkit-appearance:none;height:3px;border-radius:2px;background:rgba(255,255,255,0.08);width:50px}
+#size-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.3);border:none;cursor:pointer}
+#size-val{font-size:10px;color:rgba(255,255,255,0.2);min-width:16px;text-align:center}
+
+#toast{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  color:#fff;font-size:22px;font-weight:300;pointer-events:none;
+  opacity:0;transition:opacity .35s;z-index:200;
+  text-shadow:0 0 40px rgba(255,255,255,0.15);background:rgba(0,0,0,0.5);
+  padding:16px 24px;border-radius:12px;backdrop-filter:blur(10px)
+}
 #toast.show{opacity:1}
+
+@media(min-width:768px){
+  #panel{max-height:40vh}
+  .modo-btn{font-size:11px;padding:7px 14px}
+}
 </style>
 </head>
 <body>
+
 <canvas id="c"></canvas>
 <div id="toast"></div>
-<div id="ui">
-  <div id="modos"></div>
-  <div id="paleta"></div>
-  <div id="control-row">
-    <button class="ctrl-btn" id="undo-btn">↩</button>
-    <button class="ctrl-btn" id="clear-btn">✕</button>
-    <button class="ctrl-btn" id="save-btn">⬇</button>
-    <button class="ctrl-btn" id="rand-btn">🎲</button>
-    <input type="range" id="size-slider" min="1" max="8" step="0.5" value="3">
-    <span id="label-size">3</span>
-    <button class="ctrl-btn" id="bg-btn">◉</button>
+
+<div id="panel">
+  <div class="seccion">
+    <div class="etiqueta">Modo de dibujo</div>
+    <div id="fila-modos"></div>
+  </div>
+  <div class="seccion">
+    <div class="etiqueta">Colores</div>
+    <div id="fila-colores"></div>
+  </div>
+  <div class="seccion">
+    <div class="etiqueta">Controles</div>
+    <div id="fila-controles"></div>
   </div>
 </div>
+
 <script>
-const canvas=document.getElementById('c');
-const ctx=canvas.getContext('2d');
-const offscreen=document.createElement('canvas');
-let offCtx=offscreen.getContext('2d');
-let W,H,CX,CY;
+// === Canvas setup ===
+const c=document.getElementById('c');
+const ctx=c.getContext('2d');
+const buf=document.createElement('canvas');
+let bctx=buf.getContext('2d');
+let W,H;
 
 function resize(){
-  W=canvas.width=innerWidth;
-  H=canvas.height=innerHeight;
-  CX=W/2;CY=H/2;
-  offscreen.width=W;offscreen.height=H;
-  offCtx.fillStyle='#000';
-  offCtx.fillRect(0,0,W,H);
+  W=c.width=innerWidth;
+  H=c.height=innerHeight;
+  buf.width=W;buf.height=H;
+  bctx.fillStyle='#0a0a12';
+  bctx.fillRect(0,0,W,H);
   redraw();
 }
 resize();
 addEventListener('resize',resize);
 
-const COLORS=['#ff3366','#ff6633','#ffdd33','#33ff77','#33ddff','#7744ff','#ff44bb','#ffffff'];
-const paleta=document.getElementById('paleta');
+// === Colors ===
+const COLORS=[
+  {c:'#ff2d55',n:'Rosa'},
+  {c:'#ff9500',n:'Naranja'},
+  {c:'#ffcc00',n:'Amarillo'},
+  {c:'#34c759',n:'Verde'},
+  {c:'#00c7be',n:'Turquesa'},
+  {c:'#007aff',n:'Azul'},
+  {c:'#af52de',n:'Morado'},
+  {c:'#ffffff',n:'Blanco'}
+];
 let curColor=3;
-COLORS.forEach((c,i)=>{
-  const b=document.createElement('div');
+const filaColores=document.getElementById('fila-colores');
+COLORS.forEach((col,i)=>{
+  const b=document.createElement('button');
   b.className='color-btn'+(i===curColor?' active':'');
-  b.style.background=c;
-  const set=()=>{document.querySelectorAll('.color-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');curColor=i};
-  b.onclick=set;b.ontouchstart=e=>{e.preventDefault();set()};
-  paleta.appendChild(b);
+  b.style.background=col.c;
+  b.setAttribute('aria-label',col.n);
+  const set=()=>{
+    document.querySelectorAll('.color-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');curColor=i;
+  };
+  b.onclick=set;
+  filaColores.appendChild(b);
 });
 
+// === Modes ===
 const MODOS=[
-  {name:'🌀 Caleidoscopio',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<8;i++){const ang=a+i*Math.PI/4;pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d});pts.push({x:CX+Math.cos(-ang)*d,y:CY+Math.sin(-ang)*d})}
+  {n:'🌀 Caleidoscopio',d:'8 reflejos radiales',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),dist=Math.sqrt((x-CX)**2+(y-CY)**2);
+    for(let i=0;i<8;i++){const ang=a+i*Math.PI/4;
+      p.push({x:CX+Math.cos(ang)*dist,y:CY+Math.sin(ang)*dist});
+      p.push({x:CX+Math.cos(-ang)*dist,y:CY+Math.sin(-ang)*dist})}
   }},
-  {name:'🪞 Espejo',fn:(x,y,pts)=>{pts.push({x,y});pts.push({x:W-x,y});pts.push({x,y:H-y});pts.push({x:W-x,y:H-y})}},
-  {name:'🌺 Flor',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d})}
-    for(let i=0;i<6;i++){const ang=-a+i*Math.PI/3;pts.push({x:CX+Math.cos(ang)*d*0.55,y:CY+Math.sin(ang)*d*0.55})}
-  }},
-  {name:'🌌 Espiral',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<10;i++){const ang=a+i*Math.PI/5;const rd=d*(1+i*0.12);pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd})}
-  }},
-  {name:'🌀 Mándala',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<12;i++){const ang=a+i*Math.PI/6;pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d})}
-    for(let i=0;i<12;i++){const ang=-a+i*Math.PI/6;pts.push({x:CX+Math.cos(ang)*d*0.45,y:CY+Math.sin(ang)*d*0.45})}
-  }},
-  {name:'🌊 Olas',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);const w=Math.sin(d*0.03)*25;
-    for(let i=-3;i<=3;i++){const ang=a+Math.sin(d*0.02+i)*0.35;const rd=d+w+i*8;pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd})}
-    for(let i=-3;i<=3;i++){const ang=-a+Math.cos(d*0.02+i)*0.35;const rd=d-w+i*8;pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd})}
-  }},
-  {name:'⚜️ Lirios',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);const size=Math.min(d*1.15,Math.max(W,H)*0.65);
-    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;const c=0.35+0.1*Math.sin(i*2);
-      pts.push({x:CX+Math.cos(ang)*size,y:CY+Math.sin(ang)*size});
-      pts.push({x:CX+Math.cos(ang-c)*size*0.7,y:CY+Math.sin(ang-c)*size*0.7});
-      pts.push({x:CX+Math.cos(ang+c)*size*0.7,y:CY+Math.sin(ang+c)*size*0.7});
-      pts.push({x:CX+Math.cos(ang-c*0.5)*size*0.3,y:CY+Math.sin(ang-c*0.5)*size*0.3});
-      pts.push({x:CX+Math.cos(ang+c*0.5)*size*0.3,y:CY+Math.sin(ang+c*0.5)*size*0.3})}
-    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3+Math.PI/6;pts.push({x:CX+Math.cos(ang)*size*0.12,y:CY+Math.sin(ang)*size*0.12})}
-  }},
-  {name:'❄️ Copo',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,a=Math.atan2(dy,dx);const d=Math.min(Math.sqrt(dx*dx+dy*dy),Math.max(W,H)*0.6);
+  {n:'🪞 Espejo',d:'Reflejo horizontal + vertical',fn:(x,y,p)=>{
+    p.push({x,y});p.push({x:W-x,y});p.push({x,y:H-y});p.push({x:W-x,y:H-y})}
+  },
+  {n:'🌺 Flor',d:'6 pétalos',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
     for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;
-      for(let t=1;t<=5;t++){const r=d*t/5;const sp=r*0.12*Math.sin(t*2.5);
-        pts.push({x:CX+Math.cos(ang-sp/r)*r,y:CY+Math.sin(ang-sp/r)*r});
-        pts.push({x:CX+Math.cos(ang+sp/r)*r,y:CY+Math.sin(ang+sp/r)*r})}}
+      p.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d})}
+    for(let i=0;i<6;i++){const ang=-a+i*Math.PI/3;
+      p.push({x:CX+Math.cos(ang)*d*0.55,y:CY+Math.sin(ang)*d*0.55})}
   }},
-  {name:'⭐ Estrella',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<5;i++){const ang=a+i*Math.PI*2/5;pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d})}
-    for(let i=0;i<5;i++){const ang=a+Math.PI/5+i*Math.PI*2/5;pts.push({x:CX+Math.cos(ang)*d*0.4,y:CY+Math.sin(ang)*d*0.4})}
+  {n:'🌌 Espiral',d:'10 brazos en espiral',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
+    for(let i=0;i<10;i++){const ang=a+i*Math.PI/5;
+      p.push({x:CX+Math.cos(ang)*d*(1+i*0.12),y:CY+Math.sin(ang)*d*(1+i*0.12)})}
   }},
-  {name:'🌈 Arcoíris',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<8;i++){const ang=a+i*Math.PI/4;const rd=d+Math.sin(i)*15;pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd})}
-    for(let i=0;i<8;i++){const ang=-a+i*Math.PI/4;const rd=d*0.6+Math.cos(i)*10;pts.push({x:CX+Math.cos(ang)*rd,y:CY+Math.sin(ang)*rd})}
+  {n:'🌀 Mándala',d:'12 reflejos + anillo interior',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
+    for(let i=0;i<12;i++){const ang=a+i*Math.PI/6;
+      p.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d})}
+    for(let i=0;i<12;i++){const ang=-a+i*Math.PI/6;
+      p.push({x:CX+Math.cos(ang)*d*0.45,y:CY+Math.sin(ang)*d*0.45})}
   }},
-  {name:'🔮 Hexágono',fn:(x,y,pts)=>{
-    const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy),a=Math.atan2(dy,dx);
-    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;pts.push({x:CX+Math.cos(ang)*d,y:CY+Math.sin(ang)*d})}
-    for(let i=0;i<6;i++){const ang=-a+i*Math.PI/3;pts.push({x:CX+Math.cos(ang)*d*0.3,y:CY+Math.sin(ang)*d*0.3})}
+  {n:'🌊 Olas',d:'Distorsión sinusoidal',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
+    const w=Math.sin(d*0.03)*25;
+    for(let i=-3;i<=3;i++){
+      p.push({x:CX+Math.cos(a+Math.sin(d*0.02+i)*0.35)*(d+w+i*8),y:CY+Math.sin(a+Math.sin(d*0.02+i)*0.35)*(d+w+i*8)});
+      p.push({x:CX+Math.cos(-a+Math.cos(d*0.02+i)*0.35)*(d-w+i*8),y:CY+Math.sin(-a+Math.cos(d*0.02+i)*0.35)*(d-w+i*8)})}
+  }},
+  {n:'⚜️ Lirios',d:'6 pétalos curvos de lirio',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),dist=Math.sqrt((x-CX)**2+(y-CY)**2);
+    const sz=Math.min(dist*1.15,Math.max(W,H)*0.65);
+    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;
+      const cr=0.35+0.1*Math.sin(i*2);
+      p.push({x:CX+Math.cos(ang)*sz,y:CY+Math.sin(ang)*sz});
+      p.push({x:CX+Math.cos(ang-cr)*sz*0.7,y:CY+Math.sin(ang-cr)*sz*0.7});
+      p.push({x:CX+Math.cos(ang+cr)*sz*0.7,y:CY+Math.sin(ang+cr)*sz*0.7});
+      p.push({x:CX+Math.cos(ang-cr*0.5)*sz*0.3,y:CY+Math.sin(ang-cr*0.5)*sz*0.3});
+      p.push({x:CX+Math.cos(ang+cr*0.5)*sz*0.3,y:CY+Math.sin(ang+cr*0.5)*sz*0.3})}
+    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3+Math.PI/6;
+      p.push({x:CX+Math.cos(ang)*sz*0.12,y:CY+Math.sin(ang)*sz*0.12})}
+  }},
+  {n:'❄️ Copo',d:'Copo de nieve fractal',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX);
+    const d=Math.min(Math.sqrt((x-CX)**2+(y-CY)**2),Math.max(W,H)*0.6);
+    for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;
+      for(let t=1;t<=5;t++){const r=d*t/5,sp=r*0.12*Math.sin(t*2.5);
+        p.push({x:CX+Math.cos(ang-sp/r)*r,y:CY+Math.sin(ang-sp/r)*r});
+        p.push({x:CX+Math.cos(ang+sp/r)*r,y:CY+Math.sin(ang+sp/r)*r})}}
+  }},
+  {n:'⭐ Estrella',d:'Estrella de 5 puntas',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
+    for(let i=0;i<5;i++){p.push({x:CX+Math.cos(a+i*Math.PI*2/5)*d,y:CY+Math.sin(a+i*Math.PI*2/5)*d})}
+    for(let i=0;i<5;i++){p.push({x:CX+Math.cos(a+Math.PI/5+i*Math.PI*2/5)*d*0.4,y:CY+Math.sin(a+Math.PI/5+i*Math.PI*2/5)*d*0.4})}
+  }},
+  {n:'🌈 Arcoíris',d:'Arcos concéntricos',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
+    for(let i=0;i<8;i++){p.push({x:CX+Math.cos(a+i*Math.PI/4)*(d+Math.sin(i)*15),y:CY+Math.sin(a+i*Math.PI/4)*(d+Math.sin(i)*15)})}
+    for(let i=0;i<8;i++){p.push({x:CX+Math.cos(-a+i*Math.PI/4)*(d*0.6+Math.cos(i)*10),y:CY+Math.sin(-a+i*Math.PI/4)*(d*0.6+Math.cos(i)*10)})}
+  }},
+  {n:'🔮 Hexágono',d:'Panales hexagonales',fn:(x,y,p)=>{
+    const a=Math.atan2(y-CY,x-CX),d=Math.sqrt((x-CX)**2+(y-CY)**2);
+    for(let i=0;i<6;i++){p.push({x:CX+Math.cos(a+i*Math.PI/3)*d,y:CY+Math.sin(a+i*Math.PI/3)*d})}
+    for(let i=0;i<6;i++){p.push({x:CX+Math.cos(-a+i*Math.PI/3)*d*0.3,y:CY+Math.sin(-a+i*Math.PI/3)*d*0.3})}
   }},
 ];
+const CX=()=>W/2,CY=()=>H/2;
 
-const modoContainer=document.getElementById('modos');
 let curModo=0;
+const filaModos=document.getElementById('fila-modos');
 MODOS.forEach((m,i)=>{
   const b=document.createElement('button');
   b.className='modo-btn'+(i===0?' active':'');
-  b.textContent=m.name;
-  b.onclick=()=>{document.querySelectorAll('.modo-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');curModo=i;showToast(m.name.slice(2))};
-  b.ontouchstart=e=>{e.preventDefault();b.onclick()};
-  modoContainer.appendChild(b);
+  b.innerHTML=m.n;
+  b.title=m.d;
+  b.onclick=()=>{
+    document.querySelectorAll('.modo-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');curModo=i;
+    toast(m.n+' — '+m.d);
+  };
+  filaModos.appendChild(b);
 });
 
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._timeout);t._timeout=setTimeout(()=>t.classList.remove('show'),800)}
+// === Controls ===
+const filaCtrl=document.getElementById('fila-controles');
 
-function getColor(){return COLORS[curColor]}
+const CTRLS=[
+  {id:'undo',icon:'↩',label:'Deshacer',fn:undo},
+  {id:'clear',icon:'✕',label:'Borrar todo',fn:clearAll},
+  {id:'save',icon:'⬇',label:'Guardar imagen',fn:saveImg},
+  {id:'rand',icon:'🎲',label:'Modo aleatorio',fn:randMode},
+  {id:'bg',icon:'◉',label:'Cambiar fondo',fn:cycleBg},
+];
 
-// Audio
-let audioCtx=null;
-function initAudio(){if(!audioCtx&&window.AudioContext){audioCtx=new(window.AudioContext||window.webkitAudioContext)()}}
-let lastNote=0;
-function playTone(x,y){
-  if(!audioCtx)return;
-  const dx=x-CX,dy=y-CY,d=Math.sqrt(dx*dx+dy*dy);
-  const freq=120+d*0.3;
-  const now=Date.now();
-  if(now-lastNote<50)return;
-  lastNote=now;
-  const osc=audioCtx.createOscillator();
-  const gain=audioCtx.createGain();
-  osc.connect(gain);gain.connect(audioCtx.destination);
-  osc.frequency.value=freq;
-  osc.type='sine';
-  gain.gain.setValueAtTime(0.03,audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.1);
-  osc.start();osc.stop(audioCtx.currentTime+0.1);
-}
+CTRLS.forEach(ctrl=>{
+  const b=document.createElement('button');
+  b.className='ctrl-btn';
+  b.id=ctrl.id+'-btn';
+  b.innerHTML=`<span class="icono">${ctrl.icon}</span> ${ctrl.label}`;
+  b.onclick=ctrl.fn;
+  filaCtrl.appendChild(b);
+});
 
-let history=[];
-const MAX_HISTORY=25;
+// Slider
+const slider=document.createElement('input');
+slider.id='size-slider';slider.type='range';slider.min=1;slider.max=8;slider.step=0.5;slider.value=3;
+const sval=document.createElement('span');sval.id='size-val';sval.textContent='3';
+slider.oninput=function(){sval.textContent=this.value;brushSize=parseFloat(this.value)};
+filaCtrl.appendChild(slider);
+filaCtrl.appendChild(sval);
+
+// === Drawing ===
 let brushSize=3;
-let bgMode=0;
+let history=[];
+const MAX_HIST=20;
+let isDrawing=false,lastX=0,lastY=0;
+let particles=[];
+
+function getColor(){return COLORS[curColor].c}
+function getPts(x,y){const p=[];MODOS[curModo].fn(x,y,p);return p}
 
 function drawStroke(x1,y1,x2,y2){
-  const pts1=[],pts2=[];
-  MODOS[curModo].fn(x1,y1,pts1);
-  MODOS[curModo].fn(x2,y2,pts2);
-  const color=getColor();
-  offCtx.lineWidth=brushSize;
-  offCtx.lineCap='round';
-  offCtx.lineJoin='round';
-  offCtx.strokeStyle=color;
-  for(let i=0;i<pts1.length&&i<pts2.length;i++){
-    offCtx.shadowColor=color;
-    offCtx.shadowBlur=brushSize*4;
-    offCtx.beginPath();
-    offCtx.moveTo(pts1[i].x,pts1[i].y);
-    offCtx.lineTo(pts2[i].x,pts2[i].y);
-    offCtx.stroke();
-  }
-  offCtx.shadowBlur=0;
+  const p1=getPts(x1,y1),p2=getPts(x2,y2);
+  const col=getColor();
+  bctx.lineWidth=brushSize;bctx.lineCap='round';bctx.lineJoin='round';
+  bctx.strokeStyle=col;bctx.shadowColor=col;bctx.shadowBlur=brushSize*4;
+  for(let i=0;i<p1.length&&i<p2.length;i++){
+    bctx.beginPath();bctx.moveTo(p1[i].x,p1[i].y);bctx.lineTo(p2[i].x,p2[i].y);bctx.stroke()}
+  bctx.shadowBlur=0;
 }
 
 function drawDot(x,y){
-  const pts=[];
-  MODOS[curModo].fn(x,y,pts);
-  const color=getColor();
-  offCtx.fillStyle=color;
-  offCtx.shadowColor=color;
-  offCtx.shadowBlur=brushSize*5;
-  for(const p of pts){
-    offCtx.beginPath();
-    offCtx.arc(p.x,p.y,brushSize*0.7,0,Math.PI*2);
-    offCtx.fill();
-  }
-  offCtx.shadowBlur=0;
+  const pts=getPts(x,y);const col=getColor();
+  bctx.fillStyle=col;bctx.shadowColor=col;bctx.shadowBlur=brushSize*5;
+  for(const p of pts){bctx.beginPath();bctx.arc(p.x,p.y,brushSize*0.7,0,Math.PI*2);bctx.fill()}
+  bctx.shadowBlur=0;
+}
+
+function spawnParticles(x,y,n){
+  const col=getColor();
+  for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=Math.random()*3+1;
+    particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:1,color:col,size:Math.random()*2.5+1})}
 }
 
 function saveState(){
-  if(history.length>=MAX_HISTORY)history.shift();
-  history.push(offCtx.getImageData(0,0,W,H));
+  if(history.length>=MAX_HIST)history.shift();
+  history.push(bctx.getImageData(0,0,W,H));
+}
+function undo(){if(history.length<1)return;bctx.putImageData(history.pop(),0,0);redraw();toast('↩ Deshecho')}
+function clearAll(){bctx.fillStyle='#0a0a12';bctx.fillRect(0,0,W,H);history=[];redraw();toast('✕ Todo borrado')}
+function saveImg(){redraw();const a=document.createElement('a');a.download='neon-art.png';a.href=c.toDataURL('image/png');a.click();toast('⬇ Imagen guardada')}
+function randMode(){
+  const r=Math.floor(Math.random()*MODOS.length);
+  document.querySelectorAll('.modo-btn').forEach((b,i)=>b.classList.toggle('active',i===r));
+  curModo=r;toast('🎲 '+MODOS[r].n);
 }
 
-let isDrawing=false,lx=0,ly=0;
-let particles=[];
-
-function spawnParticles(x,y,count=5){
-  const color=getColor();
-  for(let i=0;i<count;i++){
-    const angle=Math.random()*Math.PI*2;
-    const speed=Math.random()*3+1;
-    particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,life:1,color,size:Math.random()*2.5+1})
-  }
+let bgIdx=0;
+const BGS=['#0a0a12','#1a0a2e','grad','night'];
+function cycleBg(){
+  bgIdx=(bgIdx+1)%BGS.length;
+  refreshBg();
+  const labels=['Fondo negro','Fondo morado','Fondo arcoíris','Fondo noche estrellada'];
+  toast('◉ '+labels[bgIdx]);
 }
-
-function startDraw(x,y){
-  initAudio();
-  saveState();
-  isDrawing=true;lx=x;ly=y;
-  drawDot(x,y);
-  spawnParticles(x,y);
-  redraw();
-}
-function moveDraw(x,y){
-  if(!isDrawing)return;
-  drawStroke(lx,ly,x,y);
-  const steps=Math.max(1,Math.floor(Math.sqrt((x-lx)**2+(y-ly)**2)/5));
-  for(let s=0;s<steps;s++){const t=s/steps;spawnParticles(lx+(x-lx)*t,ly+(y-ly)*t,2)}
-  playTone(x,y);
-  lx=x;ly=y;
-  redraw();
-}
-function endDraw(){isDrawing=false;}
-
-// Touch
-const getPos=e=>{const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}};
-canvas.addEventListener('touchstart',e=>{e.preventDefault();const p=getPos(e);startDraw(p.x,p.y)},{passive:false});
-canvas.addEventListener('touchmove',e=>{e.preventDefault();const p=getPos(e);moveDraw(p.x,p.y)},{passive:false});
-canvas.addEventListener('touchend',e=>{e.preventDefault();endDraw()},{passive:false});
-
-// Mouse
-canvas.addEventListener('mousedown',e=>startDraw(e.clientX,e.clientY));
-canvas.addEventListener('mousemove',e=>moveDraw(e.clientX,e.clientY));
-canvas.addEventListener('mouseup',endDraw);
-canvas.addEventListener('mouseleave',endDraw);
-
-document.getElementById('clear-btn').onclick=()=>{offCtx.fillStyle='#000';offCtx.fillRect(0,0,W,H);history.length=0;redraw()};
-document.getElementById('undo-btn').onclick=()=>{if(history.length===0)return;offCtx.putImageData(history.pop(),0,0);redraw()};
-document.getElementById('save-btn').onclick=()=>{redraw();const a=document.createElement('a');a.download='neon-art.png';a.href=canvas.toDataURL('image/png');a.click();showToast('✅ Guardado')};
-document.getElementById('rand-btn').onclick=()=>{const r=Math.floor(Math.random()*MODOS.length);document.querySelectorAll('.modo-btn').forEach((b,i)=>b.classList.toggle('active',i===r));curModo=r;showToast('🎲 '+MODOS[r].name.slice(2))};
-document.getElementById('size-slider').oninput=function(){brushSize=parseFloat(this.value);document.getElementById('label-size').textContent=brushSize};
-let bgHue=0;
-document.getElementById('bg-btn').onclick=()=>{bgMode=(bgMode+1)%3;const label=['◉ Negro','◉ Arcoíris','◉ Noche'][bgMode];showToast(label);historia=[];refrescarFondo()};
-
-let historia=[];
-function refrescarFondo(){
-  offCtx.fillStyle='#000';offCtx.fillRect(0,0,W,H);historia.length=0;
-  if(bgMode===0)return;
-  if(bgMode===1){
-    for(let y=0;y<H;y+=2){const h=(y/H)*360;offCtx.fillStyle=`hsl(${h},80%,5%)`;offCtx.fillRect(0,y,W,2)}
+function refreshBg(){
+  if(bgIdx===0){bctx.fillStyle='#0a0a12';bctx.fillRect(0,0,W,H)}
+  else if(bgIdx===1){bctx.fillStyle='#1a0a2e';bctx.fillRect(0,0,W,H)}
+  else if(bgIdx===2){
+    for(let y=0;y<H;y+=2){bctx.fillStyle=`hsl(${y/H*360},80%,5%)`;bctx.fillRect(0,y,W,2)}
   }else{
-    for(let y=0;y<H;y+=2){const h=(y/H)*240+200;offCtx.fillStyle=`hsl(${h},60%,${3+y/H*4}%)`;offCtx.fillRect(0,y,W,2)}
-    for(let i=0;i<100;i++){const x=Math.random()*W,y=Math.random()*H,s=Math.random()*1.5+0.3;offCtx.fillStyle=`rgba(255,255,255,${Math.random()*0.4})`;offCtx.beginPath();offCtx.arc(x,y,s,0,Math.PI*2);offCtx.fill()}
+    bctx.fillStyle='#05051a';bctx.fillRect(0,0,W,H);
+    for(let i=0;i<120;i++){const x=Math.random()*W,y=Math.random()*H,s=Math.random()*1.5+0.3;
+      bctx.fillStyle=`rgba(255,255,255,${Math.random()*0.5})`;bctx.beginPath();bctx.arc(x,y,s,0,Math.PI*2);bctx.fill()}
   }
   redraw();
 }
 
+// === Events ===
+function getPos(e){
+  const r=c.getBoundingClientRect();
+  const t=e.touches?e.touches[0]:e;
+  return {x:t.clientX-r.left,y:t.clientY-r.top};
+}
+function onStart(e){e.preventDefault();const p=getPos(e);saveState();isDrawing=true;lastX=p.x;lastY=p.y;drawDot(p.x,p.y);spawnParticles(p.x,p.y,6);redraw()}
+function onMove(e){e.preventDefault();if(!isDrawing)return;const p=getPos(e);drawStroke(lastX,lastY,p.x,p.y);spawnParticles(p.x,p.y,2);lastX=p.x;lastY=p.y;redraw()}
+function onEnd(e){e.preventDefault();isDrawing=false}
+
+c.addEventListener('touchstart',onStart,{passive:false});
+c.addEventListener('touchmove',onMove,{passive:false});
+c.addEventListener('touchend',onEnd,{passive:false});
+c.addEventListener('touchcancel',onEnd,{passive:false});
+c.addEventListener('mousedown',onStart);
+c.addEventListener('mousemove',onMove);
+c.addEventListener('mouseup',onEnd);
+c.addEventListener('mouseleave',onEnd);
+
+// === Toast ===
+let to=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(to);to=setTimeout(()=>t.classList.remove('show'),1200);
+}
+
+// === Render loop ===
 function redraw(){
-  ctx.drawImage(offscreen,0,0);
-  // Draw particles
+  ctx.drawImage(buf,0,0);
   for(let i=particles.length-1;i>=0;i--){
-    const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vx*=0.96;p.vy*=0.96;p.life-=0.025;
+    const p=particles[i];p.x+=p.vx;p.y+=p.vy;p.vx*=0.95;p.vy*=0.95;p.life-=0.03;
     if(p.life<=0){particles.splice(i,1);continue}
-    ctx.globalAlpha=p.life*0.6;ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=8;
+    ctx.globalAlpha=p.life*0.5;ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=6;
     ctx.beginPath();ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);ctx.fill()
   }
   ctx.globalAlpha=1;ctx.shadowBlur=0;
 }
 
-function loop(t){
-  redraw();
-  if(bgMode>0&&historia.length<1){
-    // animated subtle bg shimmer
-  }
-  requestAnimationFrame(loop);
-}
+function loop(){redraw();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 </script>
 </body>
