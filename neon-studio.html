@@ -96,11 +96,12 @@ const c=document.getElementById('c');
 const ctx=c.getContext('2d');
 const buf=document.createElement('canvas');
 let bctx=buf.getContext('2d');
-let W,H;
+let W,H,CX,CY;
 
 function resize(){
   W=c.width=innerWidth;
   H=c.height=innerHeight;
+  CX=W/2;CY=H/2;
   buf.width=W;buf.height=H;
   bctx.fillStyle='#0a0a12';
   bctx.fillRect(0,0,W,H);
@@ -209,8 +210,6 @@ const MODOS=[
     for(let i=0;i<6;i++){p.push({x:CX+Math.cos(-a+i*Math.PI/3)*d*0.3,y:CY+Math.sin(-a+i*Math.PI/3)*d*0.3})}
   }},
 ];
-const CX=()=>W/2,CY=()=>H/2;
-
 let curModo=0;
 const filaModos=document.getElementById('fila-modos');
 MODOS.forEach((m,i)=>{
