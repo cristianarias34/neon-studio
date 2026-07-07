@@ -3,296 +3,254 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Neon Studio ✨</title>
+<title>Aurora ✦ Noche Estrellada</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a0a12;overflow:hidden;font-family:system-ui,-apple-system,sans-serif;color:#fff}
-canvas{display:block;position:fixed;top:0;left:0;width:100vw;height:100dvh;touch-action:none}
-#panel{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;pointer-events:none;
-  background:linear-gradient(transparent,rgba(0,0,0,0.85));
-  padding:10px 8px 14px;display:flex;flex-direction:column;gap:6px;
-  max-height:60vh;overflow-y:auto;-webkit-overflow-scrolling:touch
+body{background:#000;overflow:hidden;font-family:system-ui,sans-serif;touch-action:none}
+canvas{display:block;position:fixed;top:0;left:0;width:100vw;height:100dvh}
+#info{
+  position:fixed;bottom:30px;left:0;right:0;text-align:center;z-index:10;
+  color:rgba(255,255,255,0.15);font-size:12px;pointer-events:none;letter-spacing:2px;
+  transition:opacity 2s
 }
-#panel>*{pointer-events:auto}
-#panel::-webkit-scrollbar{display:none}
-.sec{display:flex;flex-direction:column;gap:3px}
-.lbl{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.2);padding:0 2px}
-#modos{display:flex;gap:3px;flex-wrap:wrap}
-#modos button{
-  padding:5px 9px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);
-  background:rgba(0,0,0,0.5);color:rgba(255,255,255,0.35);font-size:9px;cursor:pointer;
-  -webkit-tap-highlight-color:transparent;font-family:inherit;white-space:nowrap;pointer-events:auto;
-  backdrop-filter:blur(4px);transition:all .15s
-}
-#modos button.active{background:rgba(255,255,255,0.1);color:#fff;border-color:rgba(255,255,255,0.2)}
-#modos button:active{transform:scale(0.93)}
-#cols{display:flex;gap:4px;flex-wrap:wrap}
-#cols button{
-  width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,0.04);
-  cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;pointer-events:auto
-}
-#cols button.active{border-color:#fff;transform:scale(1.2)}
-#ctrls{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
-#ctrls button{
-  height:30px;padding:0 10px;border-radius:7px;
-  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);
-  color:rgba(255,255,255,0.45);font-size:10px;cursor:pointer;font-family:inherit;
-  display:flex;align-items:center;gap:3px;-webkit-tap-highlight-color:transparent;pointer-events:auto
-}
-#ctrls button:active{background:rgba(255,255,255,0.07)}
-#sld{-webkit-appearance:none;height:2px;border-radius:2px;background:rgba(255,255,255,0.06);width:40px;pointer-events:auto}
-#sld::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,0.25);border:none;cursor:pointer}
-#sv{font-size:9px;color:rgba(255,255,255,0.15);min-width:14px;text-align:center}
-#toast{
-  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;
-  background:rgba(0,0,0,0.7);backdrop-filter:blur(12px);padding:14px 22px;border-radius:10px;
-  color:#fff;font-size:20px;font-weight:300;pointer-events:none;
-  opacity:0;transition:opacity .3s;text-align:center
-}
-#toast.show{opacity:1}
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="toast"></div>
-<div id="panel">
-  <div class="sec"><div class="lbl">✦ Modo</div><div id="modos"></div></div>
-  <div class="sec"><div class="lbl">● Color</div><div id="cols"></div></div>
-  <div class="sec"><div class="lbl">⚙ Controles</div><div id="ctrls"></div></div>
-</div>
+<div id="info">✦ Tocá o mové el mouse para crear aurora</div>
 <script>
 const c=document.getElementById('c'),ctx=c.getContext('2d');
-let W,H,CX,CY;
+let W,H;
 
-function resize(){
-  W=c.width=innerWidth;H=c.height=innerHeight;
-  CX=W/2;CY=H/2;
-  ctx.fillStyle='#0a0a12';ctx.fillRect(0,0,W,H);
-}
+function resize(){W=c.width=innerWidth;H=c.height=innerHeight}
 resize();addEventListener('resize',resize);
 
-const COLS=['#ff2d55','#ff9500','#ffcc00','#34c759','#00c7be','#007aff','#af52de','#fff'];
-let curC=3;
-const colsEl=document.getElementById('cols');
-COLS.forEach((c,i)=>{
-  const b=document.createElement('button');
-  b.style.background=c;b.className=i===curC?'active':'';
-  b.onclick=()=>{colsEl.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');curC=i};
-  colsEl.appendChild(b);
-});
-
-// modo functions reciben (x,y) y devuelven array de puntos espejados
-function modoCaleido(x,y){
-  const dx=x-CX,dy=y-CY,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);
-  const r=[];
-  for(let i=0;i<8;i++){const ang=a+i*Math.PI/4;
-    r.push(CX+Math.cos(ang)*d,CY+Math.sin(ang)*d);
-    r.push(CX+Math.cos(-ang)*d,CY+Math.sin(-ang)*d)}
-  return r;
-}
-function modoEspejo(x,y){return[x,y,W-x,y,x,H-y,W-x,H-y]}
-function modoFlor(x,y){
-  const dx=x-CX,dy=y-CY,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);const r=[];
-  for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;
-    r.push(CX+Math.cos(ang)*d,CY+Math.sin(ang)*d)}
-  for(let i=0;i<6;i++){const ang=-a+i*Math.PI/3;
-    r.push(CX+Math.cos(ang)*d*0.55,CY+Math.sin(ang)*d*0.55)}
-  return r;
-}
-function modoEspiral(x,y){
-  const dx=x-CX,dy=y-CY,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);const r=[];
-  for(let i=0;i<10;i++){const ang=a+i*Math.PI/5,rd=d*(1+i*0.12);
-    r.push(CX+Math.cos(ang)*rd,CY+Math.sin(ang)*rd)}
-  return r;
-}
-function modoMandala(x,y){
-  const dx=x-CX,dy=y-CY,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx);const r=[];
-  for(let i=0;i<12;i++){const ang=a+i*Math.PI/6;
-    r.push(CX+Math.cos(ang)*d,CY+Math.sin(ang)*d)}
-  for(let i=0;i<12;i++){const ang=-a+i*Math.PI/6;
-    r.push(CX+Math.cos(ang)*d*0.45,CY+Math.sin(ang)*d*0.45)}
-  return r;
-}
-function modoOlas(x,y){
-  const dx=x-CX,dy=y-CY,d=Math.hypot(dx,dy),a=Math.atan2(dy,dx),w=Math.sin(d*0.03)*25;const r=[];
-  for(let i=-3;i<=3;i++){
-    r.push(CX+Math.cos(a+Math.sin(d*0.02+i)*0.35)*(d+w+i*8),CY+Math.sin(a+Math.sin(d*0.02+i)*0.35)*(d+w+i*8));
-    r.push(CX+Math.cos(-a+Math.cos(d*0.02+i)*0.35)*(d-w+i*8),CY+Math.sin(-a+Math.cos(d*0.02+i)*0.35)*(d-w+i*8))}
-  return r;
-}
-function modoLirios(x,y){
-  const a=Math.atan2(y-CY,x-CX),dist=Math.hypot(x-CX,y-CY);
-  const sz=Math.min(dist*1.15,Math.max(W,H)*0.65);const r=[];
-  for(let i=0;i<6;i++){const ang=a+i*Math.PI/3,cr=0.35+0.1*Math.sin(i*2);
-    r.push(CX+Math.cos(ang)*sz,CY+Math.sin(ang)*sz);
-    r.push(CX+Math.cos(ang-cr)*sz*0.7,CY+Math.sin(ang-cr)*sz*0.7);
-    r.push(CX+Math.cos(ang+cr)*sz*0.7,CY+Math.sin(ang+cr)*sz*0.7);
-    r.push(CX+Math.cos(ang-cr*0.5)*sz*0.3,CY+Math.sin(ang-cr*0.5)*sz*0.3);
-    r.push(CX+Math.cos(ang+cr*0.5)*sz*0.3,CY+Math.sin(ang+cr*0.5)*sz*0.3)}
-  for(let i=0;i<6;i++){const ang=a+i*Math.PI/3+Math.PI/6;
-    r.push(CX+Math.cos(ang)*sz*0.12,CY+Math.sin(ang)*sz*0.12)}
-  return r;
-}
-function modoCopo(x,y){
-  const a=Math.atan2(y-CY,x-CX),d=Math.min(Math.hypot(x-CX,y-CY),Math.max(W,H)*0.6);const r=[];
-  for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;
-    for(let t=1;t<=5;t++){const rd=d*t/5,sp=rd*0.12*Math.sin(t*2.5);
-      r.push(CX+Math.cos(ang-sp/rd)*rd,CY+Math.sin(ang-sp/rd)*rd);
-      r.push(CX+Math.cos(ang+sp/rd)*rd,CY+Math.sin(ang+sp/rd)*rd)}}
-  return r;
-}
-function modoEstrella(x,y){
-  const a=Math.atan2(y-CY,x-CX),d=Math.hypot(x-CX,y-CY);const r=[];
-  for(let i=0;i<5;i++){const ang=a+i*Math.PI*2/5;r.push(CX+Math.cos(ang)*d,CY+Math.sin(ang)*d)}
-  for(let i=0;i<5;i++){const ang=a+Math.PI/5+i*Math.PI*2/5;r.push(CX+Math.cos(ang)*d*0.4,CY+Math.sin(ang)*d*0.4)}
-  return r;
-}
-function modoArcoiris(x,y){
-  const a=Math.atan2(y-CY,x-CX),d=Math.hypot(x-CX,y-CY);const r=[];
-  for(let i=0;i<8;i++){const ang=a+i*Math.PI/4;r.push(CX+Math.cos(ang)*(d+Math.sin(i)*15),CY+Math.sin(ang)*(d+Math.sin(i)*15))}
-  for(let i=0;i<8;i++){const ang=-a+i*Math.PI/4;r.push(CX+Math.cos(ang)*(d*0.6+Math.cos(i)*10),CY+Math.sin(ang)*(d*0.6+Math.cos(i)*10))}
-  return r;
-}
-function modoHexagono(x,y){
-  const a=Math.atan2(y-CY,x-CX),d=Math.hypot(x-CX,y-CY);const r=[];
-  for(let i=0;i<6;i++){const ang=a+i*Math.PI/3;r.push(CX+Math.cos(ang)*d,CY+Math.sin(ang)*d)}
-  for(let i=0;i<6;i++){const ang=-a+i*Math.PI/3;r.push(CX+Math.cos(ang)*d*0.3,CY+Math.sin(ang)*d*0.3)}
-  return r;
+// === Stars ===
+const stars=[];
+for(let i=0;i<300;i++){
+  stars.push({
+    x:Math.random()*W,y:Math.random()*H,
+    r:Math.random()*1.5+0.3,
+    a:Math.random()*0.8+0.1,
+    s:Math.random()*0.02+0.005,
+    p:Math.random()*Math.PI*2
+  });
 }
 
-const MODOS=[
-  {n:'🌀 Caleidoscopio',fn:modoCaleido},
-  {n:'🪞 Espejo',fn:modoEspejo},
-  {n:'🌺 Flor',fn:modoFlor},
-  {n:'🌌 Espiral',fn:modoEspiral},
-  {n:'🌀 Mándala',fn:modoMandala},
-  {n:'🌊 Olas',fn:modoOlas},
-  {n:'⚜️ Lirios',fn:modoLirios},
-  {n:'❄️ Copo',fn:modoCopo},
-  {n:'⭐ Estrella',fn:modoEstrella},
-  {n:'🌈 Arcoíris',fn:modoArcoiris},
-  {n:'🔮 Hexágono',fn:modoHexagono},
-];
-let curM=0;
-const modosEl=document.getElementById('modos');
-MODOS.forEach((m,i)=>{
-  const b=document.createElement('button');
-  b.textContent=m.n;b.className=i===0?'active':'';
-  b.onclick=()=>{modosEl.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');curM=i;toast(m.n)};
-  modosEl.appendChild(b);
-});
+const shootingStars=[];
 
-// Drawing
-let drawing=false,lx=0,ly=0;
-let strokes=[]; // almacena {x1,y1,x2,y2,color,size}
-let history=[];
-const MAX_H=50;
-let size=3;
+// === Aurora ===
+const aurora=[];
+const MAX_AURORA=80;
+let mouseX=W/2,mouseY=H/2;
 
-function col(){return COLS[curC]}
-
-function drawLine(x1,y1,x2,y2){
-  const pts1=MODOS[curM].fn(x1,y1);
-  const pts2=MODOS[curM].fn(x2,y2);
-  const color=col();
-  ctx.lineWidth=size;ctx.lineCap='round';ctx.lineJoin='round';
-  ctx.strokeStyle=color;
-  for(let i=0;i<pts1.length&&i<pts2.length;i+=2){
-    ctx.beginPath();ctx.moveTo(pts1[i],pts1[i+1]);ctx.lineTo(pts2[i],pts2[i+1]);ctx.stroke()}
-  strokes.push({x1,y1,x2,y2,color,size});
-}
-
-function drawDot(x,y){
-  const pts=MODOS[curM].fn(x,y);
-  const color=col();ctx.fillStyle=color;
-  for(let i=0;i<pts.length;i+=2){
-    ctx.beginPath();ctx.arc(pts[i],pts[i+1],size*0.6,0,Math.PI*2);ctx.fill()}
-}
-
-function redrawAll(){
-  ctx.fillStyle='#0a0a12';ctx.fillRect(0,0,W,H);
-  for(const s of strokes){
-    const pts1=MODOS[curM].fn(s.x1,s.y1);
-    const pts2=MODOS[curM].fn(s.x2,s.y2);
-    ctx.lineWidth=s.size;ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=s.color;
-    for(let i=0;i<pts1.length&&i<pts2.length;i+=2){
-      ctx.beginPath();ctx.moveTo(pts1[i],pts1[i+1]);ctx.lineTo(pts2[i],pts2[i+1]);ctx.stroke()}
+function addAurora(x,y){
+  if(aurora.length>MAX_AURORA)aurora.shift();
+  for(let i=0;i<3;i++){
+    const hue=150+Math.random()*120+Math.sin(x*0.01)*40;
+    aurora.push({
+      x:x+(Math.random()-0.5)*40,y:y+(Math.random()-0.5)*20,
+      vx:(Math.random()-0.5)*0.5,vy:-Math.random()*0.3-0.1,
+      life:1,size:Math.random()*6+3,
+      hue:hue,sat:80+Math.random()*20,lig:50+Math.random()*30
+    });
   }
 }
 
-function saveState(){
-  if(history.length>=MAX_H)history.shift();
-  history.push(strokes.map(s=>({...s})));
+// === Fireflies ===
+const fireflies=[];
+for(let i=0;i<50;i++){
+  fireflies.push({
+    x:Math.random()*W,y:Math.random()*H,
+    vx:(Math.random()-0.5)*0.3,vy:(Math.random()-0.5)*0.3,
+    size:Math.random()*2+1,
+    phase:Math.random()*Math.PI*2,
+    freq:Math.random()*0.02+0.005,
+    targetX:0,targetY:0
+  });
 }
-function undo(){
-  if(history.length<1)return;
-  strokes=history.pop();redrawAll();toast('↩ Deshecho');
-}
-function clearAll(){
-  strokes=[];history=[];ctx.fillStyle='#0a0a12';ctx.fillRect(0,0,W,H);toast('✕ Borrado');
-}
-function saveImg(){
-  redrawAll();const a=document.createElement('a');a.download='neon-art.png';a.href=c.toDataURL('image/png');a.click();toast('⬇ Guardado');
-}
-function randMode(){
-  const r=Math.floor(Math.random()*MODOS.length);
-  modosEl.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('active',i===r));curM=r;
-  redrawAll();toast('🎲 '+MODOS[r].n);
-}
-let bgI=0;
-function cycleBg(){
-  bgI=(bgI+1)%4;
-  const bs=['#0a0a12','#1a0a2e'];ctx.fillStyle=bs[bgI<2?bgI:'#0a0a12'];ctx.fillRect(0,0,W,H);
-  if(bgI===2||bgI===3){
-    if(bgI===2)for(let y=0;y<H;y+=2){ctx.fillStyle=`hsl(${y/H*360},80%,5%)`;ctx.fillRect(0,y,W,2)}
-    else{ctx.fillStyle='#05051a';ctx.fillRect(0,0,W,H);for(let i=0;i<100;i++){ctx.fillStyle=`rgba(255,255,255,${Math.random()*0.4})`;ctx.beginPath();ctx.arc(Math.random()*W,Math.random()*H,Math.random()*1.5+0.3,0,Math.PI*2);ctx.fill()}}
+
+// === Shooting stars spawner ===
+setInterval(()=>{
+  if(Math.random()<0.3){
+    shootingStars.push({
+      x:Math.random()*W*0.8,
+      y:Math.random()*H*0.3,
+      vx:Math.random()*6+3,
+      vy:Math.random()*3+1.5,
+      life:1
+    });
   }
-  redrawAll();
-  const lb=['◉ Negro','◉ Morado','◉ Arcoíris','◉ Estrellas'];toast(lb[bgI]);
+},2000);
+
+// === Events ===
+c.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;addAurora(e.clientX,e.clientY)});
+c.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const t=e.touches[0];mouseX=t.clientX;mouseY=t.clientY;
+  addAurora(t.clientX,t.clientY);
+},{passive:false});
+c.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const t=e.touches[0];mouseX=t.clientX;mouseY=t.clientY;
+  for(let i=0;i<5;i++)addAurora(t.clientX+(Math.random()-0.5)*30,t.clientY+(Math.random()-0.5)*30);
+},{passive:false});
+
+// === Mountains ===
+const mountains=[];
+for(let i=0;i<100;i++){
+  mountains.push({
+    x:(i/100)*W,y:H-80-Math.sin(i*0.1)*60-Math.sin(i*0.3)*30-Math.random()*10,
+    h:Math.sin(i*0.1)*60+Math.sin(i*0.3)*30+Math.random()*10+30
+  });
 }
 
-// Controls
-const ctrlsEl=document.getElementById('ctrls');
-const ctrls=[
-  ['↩','Deshacer',undo],['✕','Borrar',clearAll],['⬇','Guardar',saveImg],
-  ['🎲','Aleatorio',randMode],['◉','Fondo',cycleBg],
-];
-ctrls.forEach(([icon,label,fn])=>{
-  const b=document.createElement('button');
-  b.innerHTML=`<span style="font-size:12px">${icon}</span> ${label}`;
-  b.onclick=fn;ctrlsEl.appendChild(b);
-});
-const sld=document.createElement('input');sld.id='sld';sld.type='range';sld.min=1;sld.max=8;sld.step=0.5;sld.value=3;
-sld.oninput=function(){size=parseFloat(this.value);document.getElementById('sv').textContent=this.value};
-ctrlsEl.appendChild(sld);
-const sv=document.createElement('span');sv.id='sv';sv.textContent='3';ctrlsEl.appendChild(sv);
+// === Draw loop ===
+let time=0;
 
-// Events
-function gp(e){
-  const r=c.getBoundingClientRect(),t=e.touches?e.touches[0]:e;
-  return {x:t.clientX-r.left,y:t.clientY-r.top};
+function loop(t){
+  time=t;
+
+  // Sky gradient
+  const grad=ctx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'#0a0a2e');
+  grad.addColorStop(0.3,'#0f0f3a');
+  grad.addColorStop(0.5,'#1a0a2e');
+  grad.addColorStop(0.7,'#1a0520');
+  grad.addColorStop(1,'#0a0a12');
+  ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+
+  // Stars
+  for(const s of stars){
+    const a=s.a*(0.6+0.4*Math.sin(t*0.001*s.s+s.p));
+    ctx.globalAlpha=a;
+    ctx.fillStyle='#fff';
+    ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    // Glow
+    const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*3);
+    g.addColorStop(0,`rgba(255,255,255,${a*0.3})`);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,s.r*3,0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // Shooting stars
+  for(let i=shootingStars.length-1;i>=0;i--){
+    const s=shootingStars[i];
+    s.x+=s.vx;s.y+=s.vy;s.life-=0.008;
+    if(s.life<=0){shootingStars.splice(i,1);continue}
+    ctx.globalAlpha=s.life;
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(s.x,s.y);
+    ctx.lineTo(s.x-s.vx*4,s.y-s.vy*4);
+    ctx.stroke();
+    const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,15*(1-s.life+0.5));
+    g.addColorStop(0,`rgba(255,255,255,${s.life*0.5})`);g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,15*(1-s.life+0.5),0,Math.PI*2);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  // Aurora
+  for(let i=aurora.length-1;i>=0;i--){
+    const a=aurora[i];
+    a.x+=a.vx;a.y+=a.vy;a.vx+=(Math.random()-0.5)*0.02;a.vy+=(Math.random()-0.5)*0.01;
+    a.life-=0.008;
+    if(a.life<=0||a.y>H||a.y<0){aurora.splice(i,1);continue}
+    const alpha=a.life*0.25;
+    const g=ctx.createRadialGradient(a.x,a.y,0,a.x,a.y,a.size*a.life*3);
+    g.addColorStop(0,`hsla(${a.hue},${a.sat}%,${a.lig}%,${alpha})`);
+    g.addColorStop(0.5,`hsla(${a.hue+20},${a.sat-10}%,${a.lig-10}%,${alpha*0.5})`);
+    g.addColorStop(1,'transparent');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(a.x,a.y,a.size*a.life*3,0,Math.PI*2);ctx.fill();
+  }
+
+  // Aurora curtain (wave effect)
+  const curtainAlpha=0.03+0.02*Math.sin(t*0.0003)+0.02*Math.sin(t*0.0007);
+  for(let y=0;y<H*0.6;y+=6){
+    const wave=Math.sin(y*0.02+t*0.0005)*30+Math.sin(y*0.04+t*0.0008)*15;
+    const hue=180+Math.sin(y*0.01+t*0.0004)*40+Math.sin(t*0.0002)*20;
+    const alpha=curtainAlpha*(1-y/(H*0.6))*Math.max(0,Math.sin(y*0.008+t*0.0006));
+    ctx.globalAlpha=alpha;
+    ctx.strokeStyle=`hsl(${hue},80%,60%)`;
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let x=0;x<W;x+=4){
+      const wy=wave+Math.sin(x*0.005+y*0.02+t*0.0003)*20;
+      ctx.lineTo(x,y+wy);
+    }
+    ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+
+  // Mountains
+  ctx.fillStyle='#0a0a12';
+  ctx.beginPath();ctx.moveTo(0,H);
+  for(const m of mountains)ctx.lineTo(m.x,m.y);
+  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+
+  ctx.fillStyle='#0d0d1a';
+  ctx.beginPath();ctx.moveTo(0,H);
+  for(const m of mountains)ctx.lineTo(m.x-5,m.y+15+Math.sin(m.x*0.02)*10);
+  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+
+  // Tree silhouettes
+  for(let i=0;i<15;i++){
+    const tx=i*W/14+Math.sin(i*3)*20;
+    const ty=H-80-Math.sin(tx*0.1)*60-Math.sin(tx*0.3)*30-Math.random()*10-5;
+    drawTree(tx,ty,Math.random()*8+15);
+  }
+
+  // Fireflies
+  for(const f of fireflies){
+    const dx=mouseX-f.x,dy=mouseY-f.y;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist<200){
+      f.vx+=dx/dist*0.05;
+      f.vy+=dy/dist*0.05;
+    }
+    f.vx+=(Math.random()-0.5)*0.05;
+    f.vy+=(Math.random()-0.5)*0.05;
+    f.vx*=0.98;f.vy*=0.98;
+    f.x+=f.vx;f.y+=f.vy;
+    if(f.x<0)f.x=W;if(f.x>W)f.x=0;
+    if(f.y<0)f.y=H;if(f.y>H)f.y=0;
+    const glow=0.5+0.5*Math.sin(t*0.003*f.freq+f.phase);
+    const alpha=glow*0.4;
+    ctx.globalAlpha=alpha;
+    ctx.fillStyle='#ffee88';
+    ctx.shadowColor='#ffee88';
+    ctx.shadowBlur=15*glow;
+    ctx.beginPath();ctx.arc(f.x,f.y,f.size*glow,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  }
+  ctx.globalAlpha=1;
+
+  // Info fade
+  const info=document.getElementById('info');
+  if(t>4000)info.style.opacity='0';
+
+  requestAnimationFrame(loop);
 }
-function st(e){e.preventDefault();const p=gp(e);saveState();drawing=true;lx=p.x;ly=p.y;drawDot(p.x,p.y)}
-function mv(e){e.preventDefault();if(!drawing)return;const p=gp(e);drawLine(lx,ly,p.x,p.y);lx=p.x;ly=p.y}
-function en(e){e.preventDefault();drawing=false}
 
-c.addEventListener('touchstart',st,{passive:false});
-c.addEventListener('touchmove',mv,{passive:false});
-c.addEventListener('touchend',en,{passive:false});
-c.addEventListener('touchcancel',en,{passive:false});
-c.addEventListener('mousedown',st);
-c.addEventListener('mousemove',mv);
-c.addEventListener('mouseup',en);
-c.addEventListener('mouseleave',en);
-
-// Toast
-let to=null;
-function toast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(to);to=setTimeout(()=>t.classList.remove('show'),1000);
+function drawTree(x,y,h){
+  ctx.fillStyle='#050510';
+  ctx.beginPath();
+  ctx.moveTo(x,y);
+  ctx.lineTo(x-h*0.15,y-h*0.6);
+  ctx.lineTo(x+h*0.15,y-h*0.6);
+  ctx.closePath();ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x-h*0.12,y-h*0.3);
+  ctx.lineTo(x,y-h);
+  ctx.lineTo(x+h*0.12,y-h*0.3);
+  ctx.closePath();ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x-h*0.08,y-h*0.6);
+  ctx.lineTo(x,y-h*0.85);
+  ctx.lineTo(x+h*0.08,y-h*0.6);
+  ctx.closePath();ctx.fill();
 }
+
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
