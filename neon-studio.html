@@ -158,6 +158,7 @@ function loop(t){
 
   // Name text
   if(displayName){
+    nameAngle+=0.002;
     const cx=W/2,cy=H*0.3;
     const fs=Math.min(W/displayName.length*0.9,H*0.17);
     const col=COLOR_MODES[curColor].fn(t,0);
