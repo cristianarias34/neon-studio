@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Aurora ✦ Noche Estrellada</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#000;overflow:hidden;font-family:system-ui,sans-serif;touch-action:none}
 canvas{display:block;position:fixed;top:0;left:0;width:100vw;height:100dvh}
@@ -68,8 +69,8 @@ COLOR_MODES.forEach((m,i)=>{
 });
 
 document.getElementById('apply-btn').onclick=()=>{
-  displayName=nameInput.value.trim().toUpperCase();
-  if(displayName){showInput=false;overlay.classList.remove('show');togBtn.style.opacity='1';initNameParticles()}
+  displayName=nameInput.value.trim();
+  if(displayName){showInput=false;overlay.classList.remove('show');togBtn.style.opacity='1';initName()}
 };
 nameInput.addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('apply-btn').onclick()});
 
@@ -93,28 +94,13 @@ for(let i=0;i<50;i++){fireflies.push({x:Math.random()*W,y:Math.random()*H,vx:(Ma
 
 setInterval(()=>{if(Math.random()<0.3)shootingStars.push({x:Math.random()*W*0.8,y:Math.random()*H*0.3,vx:Math.random()*6+3,vy:Math.random()*3+1.5,life:1})},2000);
 
-// === Name particles ===
+// === Name ===
 let displayName='';
-let nameParticles=[];
+let nameAngle=0;
+let dragging=false,dragStartX=0,lastAngle=0;
 
-function initNameParticles(){
-  if(!displayName)return;
-  const cx=W/2,cy=H*0.3;
-  const fontSize=Math.min(W/displayName.length*0.85,H*0.16);
-  const temp=document.createElement('canvas');
-  temp.width=W;temp.height=H;
-  const tc=temp.getContext('2d');
-  tc.fillStyle='#fff';tc.font=`900 ${fontSize}px system-ui,sans-serif`;tc.textAlign='center';tc.textBaseline='middle';
-  tc.fillText(displayName,cx,cy);
-  const img=tc.getImageData(0,0,W,H);
-  nameParticles=[];
-  const step=3;
-  for(let y=0;y<H;y+=step){for(let x=0;x<W;x+=step){const i=(y*W+x)*4;if(img.data[i+3]>80){
-    nameParticles.push({
-      ox:x,oy:y,x:x,y:y,
-      phase:Math.random()*Math.PI*2
-    })
-  }}}
+function initName(){
+  nameAngle=0;
 }
 
 // === Mountains ===
@@ -122,9 +108,22 @@ const mountains=[];
 for(let i=0;i<100;i++){mountains.push({x:(i/100)*W,y:H-80-Math.sin(i*0.1)*60-Math.sin(i*0.3)*30-Math.random()*10,h:Math.sin(i*0.1)*60+Math.sin(i*0.3)*30+Math.random()*10+30})}
 
 // === Events ===
-c.addEventListener('mousemove',e=>{mouseX=e.clientX;mouseY=e.clientY;addAurora(e.clientX,e.clientY)});
-c.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];mouseX=t.clientX;mouseY=t.clientY;addAurora(t.clientX,t.clientY)},{passive:false});
-c.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];mouseX=t.clientX;mouseY=t.clientY;for(let i=0;i<5;i++)addAurora(t.clientX+(Math.random()-0.5)*30,t.clientY+(Math.random()-0.5)*30)},{passive:false});
+c.addEventListener('mousemove',e=>{
+  mouseX=e.clientX;mouseY=e.clientY;addAurora(e.clientX,e.clientY);
+  if(dragging){const dx=e.clientX-dragStartX;nameAngle=lastAngle+dx*0.008}
+});
+c.addEventListener('touchmove',e=>{e.preventDefault();const t=e.touches[0];mouseX=t.clientX;mouseY=t.clientY;addAurora(t.clientX,t.clientY);
+  if(dragging){const dx=t.clientX-dragStartX;nameAngle=lastAngle+dx*0.008}
+},{passive:false});
+c.addEventListener('touchstart',e=>{e.preventDefault();const t=e.touches[0];mouseX=t.clientX;mouseY=t.clientY;for(let i=0;i<5;i++)addAurora(t.clientX+(Math.random()-0.5)*30,t.clientY+(Math.random()-0.5)*30);
+  if(displayName){dragging=true;dragStartX=t.clientX;lastAngle=nameAngle}
+},{passive:false});
+c.addEventListener('mousedown',e=>{
+  if(displayName){dragging=true;dragStartX=e.clientX;lastAngle=nameAngle}
+});
+c.addEventListener('mouseup',()=>{if(dragging){dragging=false;lastAngle=nameAngle}});
+c.addEventListener('touchend',()=>{if(dragging){dragging=false;lastAngle=nameAngle}});
+c.addEventListener('touchcancel',()=>{if(dragging){dragging=false;lastAngle=nameAngle}});
 
 // === Draw ===
 let time=0;
@@ -157,25 +156,28 @@ function loop(t){
   for(let y=0;y<H*0.6;y+=6){const wv=Math.sin(y*0.02+t*0.0005)*30+Math.sin(y*0.04+t*0.0008)*15;const hu=180+Math.sin(y*0.01+t*0.0004)*40+Math.sin(t*0.0002)*20;const al=ca*(1-y/(H*0.6))*Math.max(0,Math.sin(y*0.008+t*0.0006));ctx.globalAlpha=al;ctx.strokeStyle=`hsl(${hu},80%,60%)`;ctx.lineWidth=2;ctx.beginPath();for(let x=0;x<W;x+=4)ctx.lineTo(x,y+wv+Math.sin(x*0.005+y*0.02+t*0.0003)*20);ctx.stroke()}
   ctx.globalAlpha=1;
 
-  // Name particles - glowing dots
-  if(displayName&&nameParticles.length){
-    const mode=COLOR_MODES[curColor];
-    for(const p of nameParticles){
-      const floatY=Math.sin(t*0.001+p.phase)*1.5;
-      p.x+=(p.ox-p.x)*0.05;
-      p.y+=(p.oy+floatY-p.y)*0.05;
-      const col=mode.fn(t,p.phase);
-      const glow=0.85+0.15*Math.sin(t*0.002+p.phase);
-      ctx.globalAlpha=glow;
-      ctx.shadowColor=`hsl(${col.h},${col.s}%,${col.l}%)`;
-      ctx.shadowBlur=20;
-      ctx.fillStyle=`hsl(${col.h},${col.s}%,${col.l}%)`;
-      ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();
-      ctx.shadowBlur=35;
-      ctx.globalAlpha=glow*0.25;
-      ctx.beginPath();ctx.arc(p.x,p.y,7,0,Math.PI*2);ctx.fill();
-      ctx.shadowBlur=0;
-    }
+  // Name text
+  if(displayName){
+    const cx=W/2,cy=H*0.3;
+    const fs=Math.min(W/displayName.length*0.9,H*0.17);
+    const col=COLOR_MODES[curColor].fn(t,0);
+    const pulse=0.95+0.05*Math.sin(t*0.001);
+    ctx.save();
+    ctx.translate(cx,cy);
+    ctx.rotate(nameAngle);
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font=`700 ${fs}px 'Dancing Script',cursive,sans-serif`;
+    ctx.letterSpacing='4px';
+    const hsl=`hsl(${col.h},${col.s}%,${col.l}%)`;
+    ctx.shadowColor=hsl;
+    ctx.shadowBlur=35;
+    ctx.fillStyle=hsl;
+    ctx.globalAlpha=pulse;
+    ctx.fillText(displayName,0,0);
+    ctx.shadowBlur=50;
+    ctx.globalAlpha=pulse*0.3;
+    ctx.fillText(displayName,0,0);
+    ctx.restore();
     ctx.globalAlpha=1;
   }
 
